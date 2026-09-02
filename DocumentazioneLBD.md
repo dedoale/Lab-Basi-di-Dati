@@ -4,7 +4,7 @@
 
 | Matricola | Nome | Cognome | Contributo al progetto |
 |:---------:|:----:|:-------:|:----------------------:|
-|295438|Alessia|De Dominicis| - Scelte progettuali e rosoluzione delle ambiguità (entrambi) <br> - Formalizzazione dei vincoli non esprimibili nel modello ER (entrambi) <br> - Ristrutturazione ed ottimizzazione del modello ER <br> - Script di popolamento (insert.sql) <br> - Implementazione dei vincoli <br> - Funzionalità 1, 3, 5, 7, 9, 11, 13                      |
+|295438|Alessia|De Dominicis| - Scelte progettuali e rosoluzione delle ambiguità (entrambi) <br> - Formalizzazione dei vincoli non esprimibili nel modello ER (entrambi) <br> - Ristrutturazione ed ottimizzazione del modello ER <br> - Script di popolamento (insert.sql) <br> - Implementazione vincoli <br> - Funzionalità 1, 3, 5, 7, 9, 11, 13                      |
 |271770|Riccardo|D'Aviero| - Scelte progettuali e rosoluzione delle ambiguità (entrambi) <br> - Modello ER <br> - Formalizzazione dei vincoli non esprimibili nel modello ER (entrambi) <br> - Traduzione del modello ER nel modello relazionale <br> - Implementazione del modello relazionale (create.sql) <br> - Funzioalità 2, 4, 6, 8, 10, 12, 14                        |
 
 **Data di consegna del progetto**: 02/09/2026
