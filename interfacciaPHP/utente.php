@@ -1,26 +1,33 @@
 <?php
 require 'db.php';
+$errore = null;
 
-// Inserimento
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['inserisci'])) {
-    $stmt = $pdo->prepare(
-        "INSERT INTO Utente (email, password, nome, ruolo, telefono, indirizzo)
-         VALUES (:email, :password, :nome, :ruolo, :telefono, :indirizzo)"
-    );
-    $stmt->execute([
-        'email' => $_POST['email'],
-        'password' => $_POST['password'],
-        'nome' => $_POST['nome'],
-        'ruolo' => $_POST['ruolo'],
-        'telefono' => $_POST['telefono'] ?: null,
-        'indirizzo' => $_POST['indirizzo'] ?: null,
-    ]);
+    try {
+        $stmt = $pdo->prepare(
+            "INSERT INTO Utente (email, password, nome, ruolo, telefono, indirizzo)
+             VALUES (:email, :password, :nome, :ruolo, :telefono, :indirizzo)"
+        );
+        $stmt->execute([
+            'email' => $_POST['email'],
+            'password' => $_POST['password'],
+            'nome' => $_POST['nome'],
+            'ruolo' => $_POST['ruolo'],
+            'telefono' => $_POST['telefono'] ?: null,
+            'indirizzo' => $_POST['indirizzo'] ?: null,
+        ]);
+    } catch (Exception $e) {
+        $errore = $e->getMessage();
+    }
 }
 
-// Eliminazione
 if (isset($_GET['elimina'])) {
-    $stmt = $pdo->prepare("DELETE FROM Utente WHERE id_utente = :id");
-    $stmt->execute(['id' => $_GET['elimina']]);
+    try {
+        $stmt = $pdo->prepare("DELETE FROM Utente WHERE id_utente = :id");
+        $stmt->execute(['id' => $_GET['elimina']]);
+    } catch (Exception $e) {
+        $errore = $e->getMessage();
+    }
 }
 
 $utenti = $pdo->query("SELECT * FROM Utente ORDER BY id_utente")->fetchAll();
@@ -34,6 +41,10 @@ $utenti = $pdo->query("SELECT * FROM Utente ORDER BY id_utente")->fetchAll();
 <body>
     <p><a href="index.php">&larr; Torna al menu</a></p>
     <h1>Utenti</h1>
+
+    <?php if ($errore): ?>
+        <p style="color: #b02a37;"><strong>Errore DB:</strong> <?= htmlspecialchars($errore) ?></p>
+    <?php endif; ?>
 
     <table border="1" cellpadding="5">
         <tr>

@@ -3,6 +3,7 @@ $pagine = [
     'Utente' => 'utente.php',
     'Prodotto' => 'prodotto.php',
     'Ordine' => 'ordine.php',
+    'Query' => 'query.php',
 ];
 ?>
 <!DOCTYPE html>

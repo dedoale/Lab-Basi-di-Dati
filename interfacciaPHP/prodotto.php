@@ -1,24 +1,33 @@
 <?php
 require 'db.php';
+$errore = null;
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['inserisci'])) {
-    $stmt = $pdo->prepare(
-        "INSERT INTO Prodotto (nome, descrizione, prezzo_base, categoria, tempo_preparazione, procedura)
-         VALUES (:nome, :descrizione, :prezzo_base, :categoria, :tempo_preparazione, :procedura)"
-    );
-    $stmt->execute([
-        'nome' => $_POST['nome'],
-        'descrizione' => $_POST['descrizione'],
-        'prezzo_base' => $_POST['prezzo_base'],
-        'categoria' => $_POST['categoria'] ?: null,
-        'tempo_preparazione' => $_POST['tempo_preparazione'],
-        'procedura' => $_POST['procedura'] ?: null,
-    ]);
+    try {
+        $stmt = $pdo->prepare(
+            "INSERT INTO Prodotto (nome, descrizione, prezzo_base, categoria, tempo_preparazione, procedura)
+             VALUES (:nome, :descrizione, :prezzo_base, :categoria, :tempo_preparazione, :procedura)"
+        );
+        $stmt->execute([
+            'nome' => $_POST['nome'],
+            'descrizione' => $_POST['descrizione'],
+            'prezzo_base' => $_POST['prezzo_base'],
+            'categoria' => $_POST['categoria'] ?: null,
+            'tempo_preparazione' => $_POST['tempo_preparazione'],
+            'procedura' => $_POST['procedura'] ?: null,
+        ]);
+    } catch (Exception $e) {
+        $errore = $e->getMessage();
+    }
 }
 
 if (isset($_GET['elimina'])) {
-    $stmt = $pdo->prepare("DELETE FROM Prodotto WHERE id_prodotto = :id");
-    $stmt->execute(['id' => $_GET['elimina']]);
+    try {
+        $stmt = $pdo->prepare("DELETE FROM Prodotto WHERE id_prodotto = :id");
+        $stmt->execute(['id' => $_GET['elimina']]);
+    } catch (Exception $e) {
+        $errore = $e->getMessage();
+    }
 }
 
 $prodotti = $pdo->query("SELECT * FROM Prodotto ORDER BY id_prodotto")->fetchAll();
@@ -32,6 +41,10 @@ $prodotti = $pdo->query("SELECT * FROM Prodotto ORDER BY id_prodotto")->fetchAll
 <body>
     <p><a href="index.php">&larr; Torna al menu</a></p>
     <h1>Prodotti</h1>
+
+    <?php if ($errore): ?>
+        <p style="color: #b02a37;"><strong>Errore DB:</strong> <?= htmlspecialchars($errore) ?></p>
+    <?php endif; ?>
 
     <table border="1" cellpadding="5">
         <tr>
