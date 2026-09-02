@@ -1133,8 +1133,3 @@ ORDER BY
 INSERT INTO Storico_Stato (id_ordine, stato, id_utente_personale) 
 VALUES (5, 'in preparazione', 3);
 ```
-
-
-## Interfaccia verso il database
-
-Abbiamo sviluppato una semplice interfaccia in PHP. Permette di interagire con il database, (da finire).
