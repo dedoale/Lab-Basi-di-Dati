@@ -4,8 +4,8 @@
 
 | Matricola | Nome | Cognome | Contributo al progetto |
 |:---------:|:----:|:-------:|:----------------------:|
-|295438|Alessia|De Dominicis|                        |
-|271770|Riccardo|D'Aviero|                        |
+|295438|Alessia|De Dominicis| - Scelte progettuali e rosoluzione delle ambiguità (entrambi) <br> - Formalizzazione dei vincoli non esprimibili nel modello ER (entrambi) <br> - Ristrutturazione ed ottimizzazione del modello ER <br> - Script di popolamento (insert.sql) <br> - Implementazione dei vincoli <br> - Funzionalità 1, 3, 5, 7, 9, 11, 13                      |
+|271770|Riccardo|D'Aviero| - Scelte progettuali e rosoluzione delle ambiguità (entrambi) <br> - Modello ER <br> - Formalizzazione dei vincoli non esprimibili nel modello ER (entrambi) <br> - Traduzione del modello ER nel modello relazionale <br> - Implementazione del modello relazionale (create.sql) <br> - Funzioalità 2, 4, 6, 8, 10, 12, 14                        |
 
 **Data di consegna del progetto**: 02/09/2026
 
@@ -190,7 +190,6 @@ Un ordine può essere personalizzato solo con caratteristiche che sono effettiva
 >Diagramma realizzato con draw.io
 
 #### Modifiche apportate 
-TODO: sistemare i diagrammi
 
 **Eliminazione della generalizzazione Utente**
 Il primo modello ER presentava una generalizzazione in cui Utente è entità padre di Cliente, Personale, Proprietario. Analizzando le sottocalissi, abbiamo notato che solo Cliente possiede degli alttributi specifici (`telefono` e `indirizzo`) mentre Personale e Proprietario non ne hanno, entrambi ereditano direttamente gli attributi di Utente. Inoltre abbiamo riflettuto sulla logica di login, che deve essere uguale per ogni tipo di Utente indipendentemente dal ruolo, e se dividessimo le sottoclassi in tre entità distinte, il login diventerebbe molto complicato. Infatti invece di effettuare un'unica query su un'unica tabella, si dovrebbero interrogare tre tabelle diverse o sapere già prima autenticazione a quale ruolo appartiene l'utente.
@@ -248,9 +247,7 @@ Tutte le chiavi esterne devono essere NOT NULL, ad eccezione di `id_gruppo` in C
 
 ### 4.1 Implementazione del modello relazionale
 
-- Inserite qui lo *script SQL* con cui **creare il database** il cui modello relazionale è stato illustrato nella sezione precedente. Ricordate di includere nel codice tutti i vincoli che possono essere espressi nel DDL. 
-
-- Potete *opzionalmente* fornire anche uno script separato di popolamento (INSERT) del database su cui basare i test delle query descritte nella sezione successiva.
+#### create.sql
 
 ```sql
 CREATE DATABASE IF NOT EXISTS Delivery;
@@ -404,51 +401,740 @@ CREATE TABLE Personalizzata (
         REFERENCES Caratteristica(id_caratteristica) ON DELETE RESTRICT ON UPDATE CASCADE
 );
 ```
+---
 
-**Errori da evitare:**
+#### insert.sql
 
-- *Non inserire esplicitamente le azioni ON DELETE e ON UPDATE sulle FOREIGN KEY.*   
-  Non inserire queste azioni vuol dire affidarsi ai default del DBMS, che solitamente sono troppo restrittivi, soprattutto per gli ON UPDATE. E' sempre meglio dichiarare esplicitamente il comportamento che si vuole applicare automaticamente in questi casi, anche se il default ci soddisfa, per rendere chiare le nostre intenzioni.
+```sql
+USE Delivery;
+
+INSERT INTO Utente (id_utente, email, password, nome, ruolo, telefono, indirizzo) VALUES
+(1, 'admin@email.it', 'password_1', 'Amministratore', 'proprietario', NULL, NULL),
+(2, 'luca@personale.it', 'password_2', 'Luca B.', 'personale', NULL, NULL),
+(3, 'sara@personale.it', 'password_3', 'Sara M.', 'personale', NULL, NULL),
+(4, 'marco@personale.it', 'password_4', 'Marco T.', 'personale', NULL, NULL),
+(5, 'mario.rossi@email.it', 'password_5', 'Mario Rossi', 'cliente', '3331234567', 'Via Roma 1, L''Aquila'),
+(6, 'giulia.bianchi@email.it', 'password_6', 'Giulia Bianchi', 'cliente', '3332222222', 'Via Milano 2, L''Aquila'),
+(7, 'andrea.verdi@email.it', 'password_7', 'Andrea Verdi', 'cliente', '3333333333', 'Via Torino 3, L''Aquila'),
+(8, 'elena.conti@email.it', 'password_8', 'Elena Conti', 'cliente', '3334444444', 'Via Napoli 4, L''Aquila');
+
+INSERT INTO Prodotto (id_prodotto, nome, descrizione, prezzo_base, categoria, tempo_preparazione, procedura) VALUES
+(1, 'Bruschette miste', 'Quattro semplici e gustose bruschette al pomodoro, con un goccio di olio EVO e foglie di basilico fresco.', 5.50, 'Antipasti', 8, 'Tostare il pane, strofinare con aglio, condire con pomodoro a cubetti, olio e basilico.'),
+(2, 'Tagliatelle al ragù', 'Pasta fresca all''uovo con ragù di carne cotto lentamente per 4 ore.', 9.00, 'Primi', 15, 'Cuocere la pasta 3 minuti in acqua salata, mantecare con il ragù caldo, spolverare di parmigiano.'),
+(3, 'Pizza Margherita', 'La tipica pizza napoletana cotta nel forno a legna.', 7.00, 'Pizze', 12, 'Stendere l''impasto, condire con pomodoro e mozzarella, cuocere nel forno a legna a 400°C per 90 secondi, guarnire con basilico.'),
+(4, 'Pizza Diavola', 'L''iconica pizza piccante dal sapore deciso.', 8.00, 'Pizze', 12, 'Stendere l''impasto, condire con pomodoro, mozzarella e salame, cuocere nel forno a legna, rifinire con olio piccante in uscita.'),
+(5, 'Tiramisù della casa', 'Dolce con savoiardi, mascarpone e caffè fatto da noi.', 4.50, 'Dolci', 3, 'Porzionare dalla vaschetta preparata in mattinata, spolverare di cacao al momento del servizio.'),
+(6, 'Caffè', 'Espresso della nostra torrefazione di fiducia.', 1.00, 'Bevande', 2, 'Estrazione singola da macinato fresco, 25 secondi circa.');
+
+INSERT INTO Immagine (id_immagine, id_prodotto, percorso_file, is_copertina) VALUES
+(1, 1, 'img/bruschette.jpg', TRUE),
+(2, 2, 'img/tagliatelle.jpg', TRUE),
+(3, 3, 'img/pizza-margherita.jpg', TRUE),
+(4, 3, 'img/pizza-margherita2.jpg', FALSE),
+(5, 4, 'img/pizza-diavola.jpg', TRUE),
+(6, 5, 'img/tiramisu.jpg', TRUE),
+(7, 6, 'img/caffe.jpg', TRUE);
+
+INSERT INTO Ingrediente (id_ingrediente, nome) VALUES
+(1, 'Pane casereccio'), (2, 'Pomodoro'), (3, 'Basilico'), (4, 'Olio extravergine'),
+(5, 'Tagliatelle fresche'), (6, 'Ragù di carne'), (7, 'Parmigiano'), (8, 'Impasto pizza'),
+(9, 'Pomodoro San Marzano'), (10, 'Fiordilatte'), (11, 'Salame piccante'), (12, 'Olio al peperoncino'),
+(13, 'Savoiardi'), (14, 'Crema al mascarpone'), (15, 'Caffè espresso'), (16, 'Cacao amaro'), (17, 'Miscela espresso');
+
+INSERT INTO Composizione (id_prodotto, id_ingrediente, quantita) VALUES
+(1, 1, 200), (1, 2, 200), (1, 3, 5), (1, 4, 20),
+(2, 5, 120), (2, 6, 150), (2, 7, 20),
+(3, 8, 250), (3, 9, 80), (3, 10, 100), (3, 3, 5),
+(4, 8, 250), (4, 2, 80), (4, 10, 100), (4, 11, 60), (4, 12, 5),
+(5, 13, 100), (5, 14, 150), (5, 15, 30), (5, 16, 5),
+(6, 17, 7);
+
+INSERT INTO Gruppo_Caratteristica (id_gruppo, id_prodotto, nome) VALUES
+(1, 2, 'Porzione'),
+(2, 3, 'Impasto'),
+(3, 4, 'Piccantezza'),
+(4, 6, 'Zucchero');
+
+INSERT INTO Caratteristica (id_caratteristica, id_prodotto, id_gruppo, nome, descrizione, differenza_prezzo, is_default) VALUES
+(1, 2, 1, 'Normale', NULL, 0.00, TRUE),
+(2, 2, 1, 'Abbondante', NULL, 2.00, FALSE),
+(3, 3, 2, 'Classico', NULL, 0.00, TRUE),
+(4, 3, 2, 'Integrale', NULL, 0.50, FALSE),
+(5, 3, NULL, 'Extra mozzarella', NULL, 1.50, FALSE),
+(6, 3, NULL, 'Origano fresco', NULL, 0.30, FALSE),
+(7, 4, 3, 'Normale', NULL, 0.00, TRUE),
+(8, 4, 3, 'Extra piccante', NULL, 0.00, FALSE),
+(9, 6, 4, 'Senza zucchero', NULL, -0.05, FALSE),
+(10, 6, 4, 'Zuccherato', NULL, 0.00, TRUE),
+(11, 6, 4, 'Molto zuccherato', NULL, 0.00, FALSE),
+(12, 6, NULL, 'Con panna', NULL, 0.50, FALSE),
+(13, 6, NULL, 'Freddo', NULL, 1.00, FALSE);
+
+INSERT INTO Ordine (id_ordine, codice_ordine, id_utente_cliente, data_inserimento, orario_richiesto) VALUES
+(1, 'ORD-2026-0001', 5, '2026-07-14 19:40:00', '2026-07-14 20:15:00'),
+(2, 'ORD-2026-0002', 6, '2026-07-14 19:20:00', '2026-07-14 20:00:00'),
+(3, 'ORD-2026-0003', 7, '2026-07-14 19:05:00', '2026-07-14 19:45:00'),
+(4, 'ORD-2026-0004', 8, '2026-07-14 18:50:00', '2026-07-14 19:30:00');
+
+INSERT INTO Riga_Ordine (id_riga, id_ordine, numero_riga, id_prodotto, quantita, prezzo_base_al_momento) VALUES
+(1, 1, 1, 3, 1, 7.00), (2, 1, 2, 4, 1, 8.00), (3, 1, 3, 5, 2, 4.50),
+(4, 2, 1, 2, 1, 9.00), (5, 2, 2, 1, 1, 5.50),
+(6, 3, 1, 3, 2, 7.00), (7, 3, 2, 6, 2, 1.00),
+(8, 4, 1, 4, 1, 8.00), (9, 4, 2, 5, 1, 4.50);
+
+INSERT INTO Personalizzata (id_riga, id_caratteristica, diff_prezzo_al_momento) VALUES
+(1, 4, 0.50),
+(2, 8, 0.00),
+(4, 2, 2.00),
+(7, 10, 0.00);
+
+INSERT INTO Storico_Stato (id_storico, id_ordine, stato, id_utente_personale, timestamp_modifica) VALUES
+(1, 1, 'in preparazione', 2, '2026-07-14 19:52:00'),
+(2, 2, 'in preparazione', 2, '2026-07-14 19:30:00'),
+(3, 3, 'in preparazione', 3, '2026-07-14 19:10:00'),
+(4, 3, 'pronto',           3, '2026-07-14 19:24:00'),
+(5, 4, 'in preparazione', 2, '2026-07-14 18:55:00'),
+(6, 4, 'pronto',           2, '2026-07-14 19:08:00'),
+(7, 4, 'in consegna',      4, '2026-07-14 19:12:00');
+```
+
 
 ### 4.2 Implementazione dei vincoli
 
-- Nel caso abbiate individuato dei **vincoli ulteriori** che non sono esprimibili nel DDL, potrete usare questa sezione per discuterne l'implementazione effettiva, ad esempio riportando il codice di procedure o trigger, o dichiarando che dovranno essere implementati all'esterno del DBMS.
+#### Controllo avanzamento stato e storicizzazione ordini
+
+```sql
+USE Delivery;
+
+DELIMITER //
+
+-- Trigger per il controllo dell'avanzamento dello stato e del timestamp
+DROP TRIGGER IF EXISTS chk_avanzamento_stato_ordine //
+CREATE TRIGGER chk_avanzamento_stato_ordine 
+BEFORE INSERT ON Storico_Stato
+FOR EACH ROW
+BEGIN
+    DECLARE ultimo_stato_enum INT;
+    DECLARE order_date DATETIME;
+    
+    SELECT CAST(stato_attuale AS UNSIGNED), data_inserimento 
+    INTO ultimo_stato_enum, order_date
+    FROM Ordine WHERE id_ordine = NEW.id_ordine;
+    
+    -- Controllo temporale (vincolo 2)
+    IF NEW.timestamp_modifica <= order_date THEN
+        SIGNAL SQLSTATE '45000' 
+        SET MESSAGE_TEXT = 'Errore: Il timestamp non può essere precedente alla data di creazione dell''ordine.';
+    END IF;
+    
+    -- Controllo progressione (vincolo 1)
+    IF CAST(NEW.stato AS UNSIGNED) != (ultimo_stato_enum + 1) THEN
+        SIGNAL SQLSTATE '45000' 
+        SET MESSAGE_TEXT = 'Errore: Transizione di stato non valida o salto di stato non permesso.';
+    END IF;
+END //
+
+-- Trigger per l'aggiornamento della ridondanza stato_attuale su Ordine
+DROP TRIGGER IF EXISTS update_ridondanza_stato //
+CREATE TRIGGER update_ridondanza_stato 
+AFTER INSERT ON Storico_Stato
+FOR EACH ROW
+BEGIN
+    UPDATE Ordine SET stato_attuale = NEW.stato WHERE id_ordine = NEW.id_ordine;
+END //
+
+DELIMITER ;
+```
+
+Qui viene anche aggiornata in automatico la ridondanza `stato_attuale`.
+
+---
+
+#### Vincoli di ruolo sugli utenti
+
+```sql
+DELIMITER //
+
+-- Un Ordine deve essere collegato a un Utente con ruolo = 'cliente'
+DROP TRIGGER IF EXISTS chk_ruolo_cliente_ordine //
+CREATE TRIGGER chk_ruolo_cliente_ordine
+BEFORE INSERT ON Ordine
+FOR EACH ROW
+BEGIN
+    DECLARE ruolo_utente VARCHAR(20);
+
+    SELECT ruolo INTO ruolo_utente
+    FROM Utente WHERE id_utente = NEW.id_utente_cliente;
+
+    IF ruolo_utente <> 'cliente' THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Errore: un Ordine può essere collegato solo a un Utente con ruolo cliente.';
+    END IF;
+END //
+
+-- Una riga di Storico_Stato deve essere collegata a un Utente con ruolo = 'personale'
+-- Eseguito prima di chk_avanzamento_stato_ordine, per dare priorità
+-- a un eventuale errore sul ruolo rispetto a uno sulla progressione.
+DROP TRIGGER IF EXISTS chk_ruolo_personale_storico //
+CREATE TRIGGER chk_ruolo_personale_storico
+BEFORE INSERT ON Storico_Stato
+FOR EACH ROW
+PRECEDES chk_avanzamento_stato_ordine
+BEGIN
+    DECLARE ruolo_utente VARCHAR(20);
+
+    SELECT ruolo INTO ruolo_utente
+    FROM Utente WHERE id_utente = NEW.id_utente_personale;
+
+    IF ruolo_utente <> 'personale' THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Errore: una riga di Storico_Stato può essere collegata solo a un Utente con ruolo personale.';
+    END IF;
+END //
+
+-- Unicità del Proprietario (vincolo 8)
+DROP TRIGGER IF EXISTS chk_proprietario_unico //
+CREATE TRIGGER chk_proprietario_unico 
+BEFORE INSERT ON Utente
+FOR EACH ROW
+BEGIN
+    DECLARE num_proprietari INT;
+    IF NEW.ruolo = 'proprietario' THEN
+        SELECT COUNT(*) INTO num_proprietari FROM Utente WHERE ruolo = 'proprietario';
+        IF num_proprietari > 0 THEN
+            SIGNAL SQLSTATE '45000' 
+            SET MESSAGE_TEXT = 'Errore: Esiste già un proprietario registrato nel sistema.';
+        END IF;
+    END IF;
+END //
+
+DELIMITER ;
+```
+
+---
+
+#### Gestione Riga Ordine, congelamento prezzi e tempi stimati
+
+```sql
+DELIMITER //
+
+-- Trigger su Riga_Ordine
+DROP TRIGGER IF EXISTS before_insert_riga_ordine //
+CREATE TRIGGER before_insert_riga_ordine
+BEFORE INSERT ON Riga_Ordine
+FOR EACH ROW
+BEGIN
+    DECLARE v_prezzo DECIMAL(6,2);
+    DECLARE v_tempo_prep INT;
+    
+    SELECT prezzo_base, tempo_preparazione 
+    INTO v_prezzo, v_tempo_prep
+    FROM Prodotto WHERE id_prodotto = NEW.id_prodotto;
+    
+    -- Congela il prezzo base (vincolo 5)
+    SET NEW.prezzo_base_al_momento = v_prezzo;
+    
+    -- Aggiorna il tempo stimato sull'ordine (con 15 min di tragitto)
+    UPDATE Ordine 
+    SET tempo_consegna_stimato = GREATEST(IFNULL(tempo_consegna_stimato, 0), v_tempo_prep + 15)
+    WHERE id_ordine = NEW.id_ordine;
+END //
+
+-- Trigger per aggiornare il prezzo totale dell'ordine all'aggiunta di una riga
+DROP TRIGGER IF EXISTS update_prezzo_totale_riga //
+CREATE TRIGGER update_prezzo_totale_riga
+AFTER INSERT ON Riga_Ordine
+FOR EACH ROW
+BEGIN
+    UPDATE Ordine 
+    SET prezzo_totale = IFNULL(prezzo_totale, 0) + (NEW.prezzo_base_al_momento * NEW.quantita)
+    WHERE id_ordine = NEW.id_ordine;
+END //
+
+-- Trigger su Personalizzata
+DROP TRIGGER IF EXISTS chk_inserimento_personalizzata_completo //
+CREATE TRIGGER chk_inserimento_personalizzata_completo 
+BEFORE INSERT ON Personalizzata
+FOR EACH ROW
+BEGIN
+    DECLARE prodotto_riga INT;
+    DECLARE prodotto_car INT;
+    DECLARE gruppo_car INT;
+    DECLARE overlap_gruppo INT;
+    DECLARE prezzo_diff DECIMAL(6,2);
+    
+    SELECT id_prodotto INTO prodotto_riga FROM Riga_Ordine WHERE id_riga = NEW.id_riga;
+    SELECT id_prodotto, id_gruppo, differenza_prezzo INTO prodotto_car, gruppo_car, prezzo_diff
+    FROM Caratteristica WHERE id_caratteristica = NEW.id_caratteristica;
+    
+    -- Congela la differenza di prezzo (vincolo 5)
+    SET NEW.diff_prezzo_al_momento = prezzo_diff;
+    
+    -- Controllo coerenza prodotto (vincolo 10)
+    IF prodotto_riga != prodotto_car THEN
+        SIGNAL SQLSTATE '45000' 
+        SET MESSAGE_TEXT = 'Errore: La caratteristica non appartiene al prodotto della riga.';
+    END IF;
+    
+    -- Controllo mutua esclusione (vincolo 4)
+    IF gruppo_car IS NOT NULL THEN
+        SELECT COUNT(*) INTO overlap_gruppo
+        FROM Personalizzata p
+        JOIN Caratteristica c ON p.id_caratteristica = c.id_caratteristica
+        WHERE p.id_riga = NEW.id_riga AND c.id_gruppo = gruppo_car;
+        
+        IF overlap_gruppo > 0 THEN
+            SIGNAL SQLSTATE '45000' 
+            SET MESSAGE_TEXT = 'Errore: Mutua esclusione violata per questo gruppo.';
+        END IF;
+    END IF;
+END //
+
+-- Trigger per aggiornare il prezzo totale quando si aggiunge una personalizzazione
+DROP TRIGGER IF EXISTS update_prezzo_totale_personalizzata //
+CREATE TRIGGER update_prezzo_totale_personalizzata
+AFTER INSERT ON Personalizzata
+FOR EACH ROW
+BEGIN
+    DECLARE id_ord INT;
+    DECLARE qta INT;
+    
+    SELECT id_ordine, quantita INTO id_ord, qta
+    FROM Riga_Ordine WHERE id_riga = NEW.id_riga;
+    
+    UPDATE Ordine 
+    SET prezzo_totale = IFNULL(prezzo_totale, 0) + (NEW.diff_prezzo_al_momento * qta)
+    WHERE id_ordine = id_ord;
+END //
+
+DELIMITER ;
+```
+
+Qui vengono anche aggiornate in automatico le ridondanze `prezzo_totale` e `tempo_consegna_stimato`.
+
+---
+
+#### Coerenza tra Caratteristica e Gruppo Caratteristica
+
+```sql
+DELIMITER //
+
+-- Coerenza tra il gruppo di una caratteristica e il prodotto a cui appartiene
+DROP TRIGGER IF EXISTS chk_coerenza_gruppo_prodotto_insert //
+CREATE TRIGGER chk_coerenza_gruppo_prodotto_insert
+BEFORE INSERT ON Caratteristica
+FOR EACH ROW
+BEGIN
+    DECLARE prodotto_gruppo INT;
+
+    IF NEW.id_gruppo IS NOT NULL THEN
+        SELECT id_prodotto INTO prodotto_gruppo
+        FROM Gruppo_Caratteristica WHERE id_gruppo = NEW.id_gruppo;
+
+        IF prodotto_gruppo <> NEW.id_prodotto THEN
+            SIGNAL SQLSTATE '45000'
+            SET MESSAGE_TEXT = 'Errore: il gruppo indicato appartiene a un prodotto diverso da quello della caratteristica.';
+        END IF;
+    END IF;
+END //
+
+DROP TRIGGER IF EXISTS chk_coerenza_gruppo_prodotto_update //
+CREATE TRIGGER chk_coerenza_gruppo_prodotto_update
+BEFORE UPDATE ON Caratteristica
+FOR EACH ROW
+BEGIN
+    DECLARE prodotto_gruppo INT;
+
+    IF NEW.id_gruppo IS NOT NULL THEN
+        SELECT id_prodotto INTO prodotto_gruppo
+        FROM Gruppo_Caratteristica WHERE id_gruppo = NEW.id_gruppo;
+
+        IF prodotto_gruppo <> NEW.id_prodotto THEN
+            SIGNAL SQLSTATE '45000'
+            SET MESSAGE_TEXT = 'Errore: il gruppo indicato appartiene a un prodotto diverso da quello della caratteristica.';
+        END IF;
+    END IF;
+END //
+
+DELIMITER ;
+```
+
+---
+
+#### Esclusività e coerenza sul menu
+
+```sql
+DELIMITER //
+
+-- Esclusività Immagine di Copertina — INSERT (vincolo 9)
+DROP TRIGGER IF EXISTS chk_unica_copertina_insert //
+CREATE TRIGGER chk_unica_copertina_insert
+BEFORE INSERT ON Immagine
+FOR EACH ROW
+BEGIN
+    IF NEW.is_copertina = TRUE THEN
+        UPDATE Immagine SET is_copertina = FALSE WHERE id_prodotto = NEW.id_prodotto;
+    END IF;
+END //
+
+-- Esclusività Immagine di Copertina — UPDATE
+DROP TRIGGER IF EXISTS chk_unica_copertina_update //
+CREATE TRIGGER chk_unica_copertina_update
+BEFORE UPDATE ON Immagine
+FOR EACH ROW
+BEGIN
+    IF NEW.is_copertina = TRUE THEN
+        UPDATE Immagine 
+        SET is_copertina = FALSE 
+        WHERE id_prodotto = NEW.id_prodotto 
+          AND id_immagine <> NEW.id_immagine;
+    END IF;
+END //
+
+-- Esclusività Caratteristica di Default — INSERT (vincolo 3)
+DROP TRIGGER IF EXISTS chk_unico_default_insert //
+CREATE TRIGGER chk_unico_default_insert
+BEFORE INSERT ON Caratteristica
+FOR EACH ROW
+BEGIN
+    IF NEW.is_default = TRUE AND NEW.id_gruppo IS NOT NULL THEN
+        UPDATE Caratteristica SET is_default = FALSE WHERE id_gruppo = NEW.id_gruppo;
+    END IF;
+END //
+
+-- Esclusività Caratteristica di Default — UPDATE
+DROP TRIGGER IF EXISTS chk_unico_default_update //
+CREATE TRIGGER chk_unico_default_update
+BEFORE UPDATE ON Caratteristica
+FOR EACH ROW
+BEGIN
+    IF NEW.is_default = TRUE AND NEW.id_gruppo IS NOT NULL THEN
+        UPDATE Caratteristica 
+        SET is_default = FALSE 
+        WHERE id_gruppo = NEW.id_gruppo 
+          AND id_caratteristica <> NEW.id_caratteristica;
+    END IF;
+END //
+
+DELIMITER ;
+```
+
+---
+
+#### Coerenza dell'orario richiesto
+
+```sql
+DELIMITER //
+
+-- Coerenza Orario Richiesto (vincolo 7)
+-- orario_richiesto viene sempre impostato in un secondo momento
+-- rispetto alla creazione dell'ordine (alla conferma), quindi il controllo copre solo BEFORE UPDATE.
+
+DROP TRIGGER IF EXISTS chk_orario_richiesto //
+CREATE TRIGGER chk_orario_richiesto
+BEFORE UPDATE ON Ordine
+FOR EACH ROW
+BEGIN
+    IF NEW.orario_richiesto IS NOT NULL AND NEW.orario_richiesto != IFNULL(OLD.orario_richiesto, '1000-01-01') THEN
+        IF NEW.orario_richiesto <= DATE_ADD(NEW.data_inserimento, INTERVAL NEW.tempo_consegna_stimato MINUTE) THEN
+            SIGNAL SQLSTATE '45000' 
+            SET MESSAGE_TEXT = 'Errore: Orario richiesto incompatibile con i tempi di preparazione.';
+        END IF;
+    END IF;
+END //
+
+DELIMITER ;
+```
+---
 
 ### 4.3 Implementazione funzionalità richieste
 
-- Riportate qui il **codice che implementa tutte le funzionalità richieste**, che si tratti di SQL o di pseudocodice o di entrambi. *Il codice di ciascuna funzionalità dovrà essere preceduto dal suo numero identificativo e dal testo della sua definizione*, come riportato nella specifica.
-
-- Se necessario, riportate anche il codice delle procedure e/o viste di supporto.
-
 #### Funzionalità 1
 
-> Definizione come da specifica
+> Generazione del menu (*lista dei prodotti con tutte le informazioni visibili al cliente, possibilmente anche le relative caratteristiche con la differenza di prezzo*).
 
 ```sql
-CODICE
+SELECT 
+    p.categoria,
+    p.nome AS nome_prodotto,
+    p.descrizione AS descrizione_prodotto,
+    p.prezzo_base,
+    i.percorso_file AS immagine_copertina,
+    gc.nome AS gruppo_mutua_esclusione,
+    c.nome AS nome_caratteristica,
+    c.descrizione AS descrizione_caratteristica,
+    c.differenza_prezzo,
+    c.is_default
+FROM 
+    Prodotto p
+LEFT JOIN 
+    Immagine i ON p.id_prodotto = i.id_prodotto AND i.is_copertina = TRUE
+LEFT JOIN 
+    Caratteristica c ON p.id_prodotto = c.id_prodotto
+LEFT JOIN 
+    Gruppo_Caratteristica gc ON c.id_gruppo = gc.id_gruppo
+ORDER BY 
+    p.categoria, 
+    p.nome, 
+    gc.nome, 
+    c.is_default DESC, 
+    c.nome;
 ```
 
 #### Funzionalità 2
 
-> Definizione come da specifica
+> Eliminazione di una caratteristica associata a un prodotto.
 
 ```sql
-CODICE
+DELETE FROM Caratteristica 
+WHERE 
+    nome = 'Senza Zucchero' 
+    AND id_prodotto = (SELECT id_prodotto FROM Prodotto WHERE nome = 'Caffè');
 ```
+
+#### Funzionalità 3
+
+> Inserimento di un prodotto in un ordine, comprensivo delle sue eventuali caratteristiche.
+
+```sql
+START TRANSACTION;
+
+SET @next_riga = (SELECT COALESCE(MAX(numero_riga), 0) + 1 FROM Riga_Ordine WHERE id_ordine = 5);
+
+INSERT INTO Riga_Ordine (id_ordine, numero_riga, id_prodotto, quantita) 
+VALUES (5, @next_riga, 10, 2); 
+
+SET @id_nuova_riga = LAST_INSERT_ID();
+
+INSERT INTO Personalizzata (id_riga, id_caratteristica) 
+VALUES (@id_nuova_riga, 12);
+
+INSERT INTO Personalizzata (id_riga, id_caratteristica) 
+VALUES (@id_nuova_riga, 15);
+
+COMMIT;
+```
+
+#### Funzionalità 4
+
+> Calcolo del tempo stimato di consegna e del prezzo totale di un ordine (*suggerimento: potete provare a usare una sotto-query per calcolare la differenza cumulativa di prezzo derivante dalle caratteristiche selezionate e poi sommarla al prezzo base*).
+
+```sql
+SELECT 
+    prezzo_totale, 
+    tempo_consegna_stimato 
+FROM 
+    Ordine 
+WHERE 
+    id_ordine = 5;
+```
+
+#### Funzionalità 5
+
+> Lista degli ordini non ancora messi in preparazione dopo più di un'ora dall'inserimento (*suggerimento: è quindi necessario prevedere degli opportuni timestamp da affiancare agli stati*).
+
+```sql
+SELECT 
+    id_ordine, 
+    codice_ordine, 
+    data_inserimento, 
+    id_utente_cliente
+FROM 
+    Ordine
+WHERE 
+    stato_attuale = 'inserito' 
+    AND data_inserimento <= DATE_SUB(NOW(), INTERVAL 1 HOUR)
+ORDER BY 
+    data_inserimento ASC;
+```
+
+#### Funzionalità 6
+
+> Calcolo del tempo medio di consegna, cioè di passaggio tra lo stato *in consegna* in quello *consegnato*, per ciascun membro del personale addetto alla consegna (*supponiamo che chi consegna sia colui il quale imposta lo stato su consegnato*).
+
+```sql
+SELECT 
+    u.nome AS fattorino,
+    u.email,
+    ROUND(AVG(TIMESTAMPDIFF(MINUTE, s_inizio.timestamp_modifica, s_fine.timestamp_modifica)), 1) AS tempo_medio_consegna_minuti,
+    COUNT(s_fine.id_ordine) AS numero_consegne_effettuate
+FROM 
+    Storico_Stato s_fine
+JOIN 
+    Storico_Stato s_inizio ON s_fine.id_ordine = s_inizio.id_ordine
+JOIN 
+    Utente u ON s_fine.id_utente_personale = u.id_utente
+WHERE 
+    s_fine.stato = 'consegnato' 
+    AND s_inizio.stato = 'in consegna'
+GROUP BY 
+    u.id_utente, u.nome, u.email
+ORDER BY 
+    tempo_medio_consegna_minuti ASC;
+```
+
+#### Funzionalità 7
+
+> Classifica di gradimento dei prodotti (*quali prodotti compaiono più comunemente negli ordini?*).
+
+```sql
+SELECT 
+    p.nome AS nome_prodotto,
+    p.categoria,
+    SUM(ro.quantita) AS quantita_totale_venduta,
+    COUNT(DISTINCT ro.id_ordine) AS numero_ordini_distinti
+FROM 
+    Riga_Ordine ro
+JOIN 
+    Prodotto p ON ro.id_prodotto = p.id_prodotto
+GROUP BY 
+    p.id_prodotto, p.nome, p.categoria
+ORDER BY 
+    quantita_totale_venduta DESC;
+```
+
+#### Funzionalità 8
+
+> Calcolo dell'incasso giornaliero.
+
+```sql
+SELECT 
+    DATE(ss.timestamp_modifica) AS data_riferimento,
+    SUM(o.prezzo_totale) AS incasso_giornaliero,
+    COUNT(o.id_ordine) AS numero_ordini_evasi
+FROM 
+    Ordine o
+JOIN 
+    Storico_Stato ss ON o.id_ordine = ss.id_ordine
+WHERE 
+    ss.stato = 'consegnato'
+    AND DATE(ss.timestamp_modifica) = CURRENT_DATE()
+GROUP BY 
+    DATE(ss.timestamp_modifica);
+```
+
+#### Funzionalità 9
+
+> Prospetto del consumo di ingredienti in un anno (*quantità di ciascun ingrediente consumata in un certo anno*).
+
+```sql
+SELECT 
+    i.nome AS nome_ingrediente,
+    SUM(ro.quantita * c.quantita) AS quantita_totale_consumata
+FROM 
+    Ordine o
+JOIN 
+    Storico_Stato ss ON o.id_ordine = ss.id_ordine AND ss.stato = 'consegnato'
+JOIN 
+    Riga_Ordine ro ON o.id_ordine = ro.id_ordine
+JOIN 
+    Composizione c ON ro.id_prodotto = c.id_prodotto
+JOIN 
+    Ingrediente i ON c.id_ingrediente = i.id_ingrediente
+WHERE 
+    YEAR(ss.timestamp_modifica) = 2026
+GROUP BY 
+    i.id_ingrediente, i.nome
+ORDER BY 
+    quantita_totale_consumata DESC;
+```
+
+#### Funzionalità 10
+
+> Estrazione dei prodotti preferiti da un cliente (*cioè i prodotti più ordinati da quel cliente, magari escludendo a priori quelli ordinati solo un paio di volte...*).
+
+```sql
+SET @id_cliente = 2;  -- parametro: cliente da analizzare
+
+SELECT 
+    p.nome AS prodotto_preferito,
+    SUM(ro.quantita) AS totale_pezzi_acquistati,
+    COUNT(ro.id_ordine) AS numero_volte_ordinato
+FROM 
+    Ordine o
+JOIN 
+    Riga_Ordine ro ON o.id_ordine = ro.id_ordine
+JOIN 
+    Prodotto p ON ro.id_prodotto = p.id_prodotto
+WHERE 
+    o.id_utente_cliente = @id_cliente 
+    AND o.stato_attuale = 'consegnato'
+GROUP BY 
+    p.id_prodotto, p.nome
+HAVING 
+    COUNT(ro.id_ordine) >= 3
+ORDER BY 
+    numero_volte_ordinato DESC, 
+    totale_pezzi_acquistati DESC;
+```
+
+#### Funzionalità 11
+
+> Conteggio degli ordini attivi (non in stato *consegnato*) divisi per il loro stato di avanzamento.
+
+```sql
+SELECT 
+    stato_attuale AS stato_ordine,
+    COUNT(id_ordine) AS numero_ordini
+FROM 
+    Ordine
+WHERE 
+    stato_attuale != 'consegnato'
+GROUP BY 
+    stato_attuale
+ORDER BY 
+    CAST(stato_attuale AS UNSIGNED) ASC;
+```
+
+#### Funzionalità 12
+
+> Conteggio degli ordini smaltiti (consegnati) in uno specifico giorno.
+
+```sql
+SET @giorno_riferimento = '2026-07-14';  -- parametro: giorno da verificare
+
+SELECT 
+    COUNT(o.id_ordine) AS ordini_smaltiti
+FROM 
+    Ordine o
+JOIN 
+    Storico_Stato ss ON o.id_ordine = ss.id_ordine
+WHERE 
+    ss.stato = 'consegnato'
+    AND DATE(ss.timestamp_modifica) = @giorno_riferimento;
+```
+
+#### Funzionalità 13
+
+> Lista dei membri del personale che hanno lavorato a un particolare ordine.
+
+```sql
+SELECT 
+    u.id_utente,
+    u.nome AS membro_personale,
+    u.email,
+    ss.stato AS operazione_eseguita,
+    ss.timestamp_modifica
+FROM 
+    Storico_Stato ss
+JOIN 
+    Utente u ON ss.id_utente_personale = u.id_utente
+WHERE 
+    ss.id_ordine = 5
+ORDER BY 
+    ss.timestamp_modifica ASC;
+```
+
+#### Funzionalità 14
+
+> Aggiornamento dello stato di un ordine.
+
+```sql
+INSERT INTO Storico_Stato (id_ordine, stato, id_utente_personale) 
+VALUES (5, 'in preparazione', 3);
+```
+
 
 ## Interfaccia verso il database
 
-- Opzionalmente, se avete deciso di realizzare anche una **(semplice) interfaccia** (a linea di comando o grafica) in un linguaggio di programmazione a voi noto (Java, PHP, ...) che manipoli il vostro database , dichiaratelo in questa sezione, elencando
-  le tecnologie utilizzate e le funzionalità invocabili dall'interfaccia. 
-
-- Il relativo codice sorgente dovrà essere *allegato *alla presente relazione.
-
------
-
-**Raccomandazioni finali**
-
-- Questo documento è un modello che spero possa esservi utile per scrivere la documentazione finale del vostro progetto di Laboratorio di Basi di Dati.
-
-- Cercate di includere tutto il codice SQL nella documentazione, come indicato in questo modello, per facilitarne la correzione. Potete comunque allegare alla documentazione anche il *dump* del vostro database o qualsiasi altro elemento che ritenete utile ai fini della valutazione.
-
-- Ricordate che la documentazione deve essere consegnata, anche per email, almeno *una settimana prima* della data prevista per l'appello d'esame. Eventuali eccezioni a questa regola potranno essere concordate col docente.
+Abbiamo sviluppato una semplice interfaccia in PHP. Permette di interagire con il database, (da finire).
